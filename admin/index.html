@@ -3,38 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
   <title>Content Manager — VS Blog</title>
-  <link href="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.css" rel="stylesheet" />
 </head>
 <body>
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-  <script>
-    CMS.init({
-      config: {
-        backend: {
-          name: 'github',
-          repo: 'bliblaz/portfolio',
-          branch: 'master'
-        },
-        media_folder: 'images',
-        public_folder: '/images',
-        collections: [{
-          name: 'blog',
-          label: 'Blog Posts',
-          folder: 'posts',
-          create: true,
-          slug: '{{slug}}',
-          extension: 'md',
-          fields: [
-            { label: 'Title', name: 'title', widget: 'string' },
-            { label: 'Date', name: 'date', widget: 'datetime' },
-            { label: 'Description', name: 'description', widget: 'string', required: false },
-            { label: 'Tags', name: 'tags', widget: 'list', required: false },
-            { label: 'Body', name: 'body', widget: 'markdown' }
-          ]
-        }]
-      }
-    });
-  </script>
+  <script src="https://unpkg.com/decap-cms@^3.3.3/dist/decap-cms.js"></script>
 </body>
 </html>
