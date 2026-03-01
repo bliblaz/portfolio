@@ -1,0 +1,54 @@
+name: Build blog index
+
+on:
+  push:
+    paths:
+      - 'posts/**.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build posts/index.json
+        run: |
+          echo "[" > posts/index.json.tmp
+          first=true
+          for f in posts/*.md; do
+            [ -f "$f" ] || continue
+            slug=$(basename "$f" .md)
+            title=$(grep '^title:' "$f" | head -1 | sed 's/^title: *"\?\(.*\)"\?$/\1/')
+            date=$(grep '^date:' "$f" | head -1 | sed 's/^date: *"\?\(.*\)"\?$/\1/')
+            desc=$(grep '^description:' "$f" | head -1 | sed 's/^description: *"\?\(.*\)"\?$/\1/')
+            tags=$(grep '^tags:' "$f" | head -1 | sed 's/^tags: *\[*\(.*\)\]*$/\1/' | sed 's/"//g')
+
+            if [ "$first" = true ]; then first=false; else echo "," >> posts/index.json.tmp; fi
+
+            # Build tags array
+            tags_json="["
+            tag_first=true
+            IFS=',' read -ra TAG_ARR <<< "$tags"
+            for tag in "${TAG_ARR[@]}"; do
+              tag=$(echo "$tag" | xargs)
+              [ -z "$tag" ] && continue
+              if [ "$tag_first" = true ]; then tag_first=false; else tags_json="$tags_json,"; fi
+              tags_json="$tags_json\"$tag\""
+            done
+            tags_json="$tags_json]"
+
+            printf '  {"slug":"%s","title":"%s","date":"%s","description":"%s","tags":%s}' \
+              "$slug" "$title" "$date" "$desc" "$tags_json" >> posts/index.json.tmp
+          done
+          echo "" >> posts/index.json.tmp
+          echo "]" >> posts/index.json.tmp
+          mv posts/index.json.tmp posts/index.json
+
+      - name: Commit index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add posts/index.json
+          git diff --cached --quiet || git commit -m "chore: rebuild blog index" && git push
